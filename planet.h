@@ -1,4 +1,7 @@
-#include "orbit.h"
+#ifndef PLANET_H
+#define PLANET_H
+
+typedef struct Orbit Orbit;
 
 typedef struct {
     double x;
@@ -15,7 +18,10 @@ typedef struct {
     double orbital_period;
     char *name;
     Point3D point;
+    Orbit *orbit;
 } Planetoid;
+
+#endif 
 
 
 
