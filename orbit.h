@@ -1,3 +1,6 @@
+#ifndef ORBIT_H
+#define ORBIT_H
+
 #include "planet.h"
 
 typedef struct {
@@ -9,3 +12,6 @@ typedef struct {
 } Orbit;
 
 void *simulate;
+
+
+#endif
