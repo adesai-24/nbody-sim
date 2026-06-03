@@ -27,3 +27,19 @@ void compute_forces(Planetoid *bodies, int n, double G, double eps) {
         }
     }
 }
+
+void integrate(Planetoid *bodies, int n, double dt) {
+    for (int i = 0; i < n; i++) {
+        Planetoid *a = &bodies[i];
+        Vec3 term1_pos = vec_scale_res(a->vel, dt);
+        Vec3 term2_pos = vec_scale_res(a->acc_prev, dt*dt*0.5);
+        Vec3 pos_res = vec_add_res(term1_pos, term2_pos);
+        vec_add(&(a->pos), pos_res);
+
+        Vec3 term1_vel = vec_add_res(a->acc_prev, a->acc);
+        vec_scale(&term1_vel, dt*0.5);
+        vec_add(&(a->vel), term1_vel);
+        a->acc_prev = a->acc;
+        a->acc = (Vec3){0,0,0};
+    }
+}
