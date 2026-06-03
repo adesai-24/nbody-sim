@@ -1,0 +1,29 @@
+#include "body.h"
+#include "obj_types.h"
+#include <math.h>
+
+void compute_forces(Planetoid *bodies, int n, double G, double eps) {
+    for (int i = 0; i < n; i++) {
+        bodies[i].acc = (Vec3){0,0,0};
+    }
+    for (int i = 0; i < n; i++) {
+        for (int j = i+1; j < n; j++) {
+            Planetoid *a = &bodies[i];
+            Planetoid *b = &bodies[j];
+            double dx = b->pos.x - a->pos.x;
+            double dy = b->pos.y - a->pos.y;
+            double dz = b->pos.z - a->pos.z;
+
+            double r = sqrt(dx*dx + dy*dy + dz*dz + eps*eps);
+            double force = (G*a->mass*b->mass)/(r*r);
+            
+            a->acc.x += (force / a->mass) * (dx/r);
+            a->acc.y += (force / a->mass) * (dy/r);
+            a->acc.z += (force / a->mass) * (dz/r);
+
+            b->acc.x -= (force / b->mass) * (dx/r);
+            b->acc.y -= (force / b->mass) * (dy/r);
+            b->acc.z -= (force / b->mass) * (dz/r);
+        }
+    }
+}

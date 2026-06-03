@@ -16,4 +16,8 @@ typedef struct {
     int capacity, head, count;
 } Trail;
 
+Vec3 vec_add(double x, double y, double z);
+void vec_scale(Vec3 *vec, double scaler);
+double vec_magnitude(Vec3 vec);
+
 #endif
