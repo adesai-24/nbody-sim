@@ -1,12 +1,10 @@
 #include "obj_types.h"
 #include <math.h>
 
-Vec3 vec_add(double x, double y, double z) {
-    Vec3 vec;
-    vec.x = x;
-    vec.y = y;
-    vec.z = z;
-    return vec;
+void *vec_add(Vec3 *dest, Vec3 *src) {
+    dest->x += src->x;
+    dest->y += src->y;
+    dest->z += src->z;
 }
 
 void vec_scale(Vec3 *vec, double scaler) {
