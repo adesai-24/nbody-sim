@@ -2,7 +2,7 @@
 
 Planetoid body_init(Vec3 pos, Vec3 vel, long double mass, long double radius, char *name) {
     Planetoid new_planet;
-    new_planet.pos = new_planet.pos;
+    new_planet.pos = pos;
     new_planet.vel = vel;
     new_planet.mass = mass;
     new_planet.radius = radius;
