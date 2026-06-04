@@ -10,11 +10,11 @@ Planetoid body_init(Vec3 pos, Vec3 vel, long double mass, long double radius, ch
     return new_planet;
 }
 
-Trail *trail_init(int capacity) {
-    Trail *trail = malloc(sizeof(Trail) * capacity);
-    trail->capacity = capacity;
-    trail->head = 0;
-    trail->count = 0;
+Trail trail_init(int capacity) {
+    Trail trail;
+    trail.capacity = capacity;
+    trail.head = 0;
+    trail.count = 0;
     return trail; 
 }
 
