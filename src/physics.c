@@ -1,6 +1,4 @@
-#include "objects/body.h"
-#include "objects/obj_types.h"
-#include <math.h>
+#include "physics.h"
 
 void compute_forces(Planetoid *bodies, int n, double G, double eps) {
     for (int i = 0; i < n; i++) {
