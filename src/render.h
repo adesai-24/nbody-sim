@@ -20,4 +20,7 @@ void draw_bodies(Planetoid *bodies, int n, SimCamera cam);
 /* Overlay text: step count, body count, total energy, dt, FPS, controls. */
 void draw_hud(Planetoid *bodies, int n, long step, double energy, double dt, int fps);
 
+/* Bottom-right scale bar with a zoom-adaptive distance label (m/km/AU/ly). */
+void draw_scale_legend(SimCamera cam);
+
 #endif

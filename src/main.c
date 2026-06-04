@@ -64,6 +64,7 @@ int main(void) {
             draw_trails(trails, bodies, n, cam);
             draw_bodies(bodies, n, cam);
             draw_hud(bodies, n, step, E, DT, GetFPS());
+            draw_scale_legend(cam);
             if (cam.paused)
                 DrawText("PAUSED", WIN_W / 2 - 40, 10, 24, YELLOW);
         EndDrawing();

@@ -7,10 +7,10 @@
 
 #define AU_M           1.496e11   /* metres in one astronomical unit       */
 #define DEFAULT_AU_PX  300.0      /* on-screen pixels per AU at reset zoom  */
+#define DEFAULT_SCALE  (DEFAULT_AU_PX / AU_M)  /* pixels per metre at reset */
 
 #define SIZE_K         2.2e-9     /* scales cbrt(mass) -> screen radius     */
-#define BODY_MIN_PX    3.0f       /* clamp so tiny bodies stay visible      */
-#define BODY_MAX_PX    30.0f      /* clamp so the Sun doesn't swallow view  */
+#define BODY_MIN_PX    2.0f       /* floor so distant bodies stay visible   */
 
 #define ZOOM_STEP      1.1        /* zoom multiplier per wheel notch        */
 
@@ -32,10 +32,15 @@ static Vector2 world_to_screen(SimCamera cam, Vec3 p) {
     return s;
 }
 
-static float body_screen_radius(const Planetoid *b) {
-    double r = cbrt((double)b->mass) * SIZE_K;
+/* Screen radius scales with the zoom level so bodies grow when you zoom in
+ * and shrink when you zoom out (relative to the default zoom). cbrt(mass)
+ * keeps the bodies in sensible proportion to one another; a small floor
+ * stops far-out bodies from disappearing entirely. No upper cap, so zooming
+ * in keeps revealing a body's true relative size. */
+static float body_screen_radius(const Planetoid *b, SimCamera cam) {
+    double zoom = cam.scale / DEFAULT_SCALE;
+    double r = cbrt((double)b->mass) * SIZE_K * zoom;
     if (r < BODY_MIN_PX) r = BODY_MIN_PX;
-    if (r > BODY_MAX_PX) r = BODY_MAX_PX;
     return (float)r;
 }
 
@@ -43,7 +48,7 @@ static float body_screen_radius(const Planetoid *b) {
 
 SimCamera camera_default(void) {
     SimCamera c;
-    c.scale = DEFAULT_AU_PX / AU_M;
+    c.scale = DEFAULT_SCALE;
     c.off_x = GetScreenWidth() / 2.0;
     c.off_y = GetScreenHeight() / 2.0;
     c.paused = 0;
@@ -107,7 +112,7 @@ void draw_bodies(Planetoid *bodies, int n, SimCamera cam) {
     for (int i = 0; i < n; i++) {
         Planetoid *p = &bodies[i];
         Vector2 c = world_to_screen(cam, p->pos);
-        float r = body_screen_radius(p);
+        float r = body_screen_radius(p, cam);
         Color col = PALETTE[i % PALETTE_N];
 
         DrawCircleV(c, r, col);
@@ -143,4 +148,84 @@ void draw_hud(Planetoid *bodies, int n, long step, double energy, double dt, int
 
     DrawText("[scroll] zoom  [drag] pan  [R] reset  [space] pause",
              10, GetScreenHeight() - 24, 16, GRAY);
+}
+
+/* Distance units the scale bar climbs through as you zoom out, smallest
+ * first. Each entry is how many metres are in one of that unit. */
+typedef struct { const char *name; double metres; } ScaleUnit;
+static const ScaleUnit SCALE_UNITS[] = {
+    { "m",  1.0 },
+    { "km", 1.0e3 },
+    { "AU", 1.496e11 },
+    { "ly", 9.4607e15 },
+};
+static const int SCALE_UNITS_N = (int)(sizeof(SCALE_UNITS) / sizeof(SCALE_UNITS[0]));
+
+/* Snap a positive value to the nearest "nice" 1/2/5 x 10^k below it. */
+static double nice_round(double v) {
+    double e = floor(log10(v));
+    double base = pow(10.0, e);
+    double f = v / base;            /* 1 <= f < 10 */
+    double nf = (f < 2.0) ? 1.0 : (f < 5.0) ? 2.0 : 5.0;
+    return nf * base;
+}
+
+/* Write a non-negative integer with thousands separators, e.g. 100000000 ->
+ * "100,000,000", so large round distances read cleanly instead of in
+ * scientific notation. */
+static void group_commas(long long v, char *out, size_t n) {
+    char tmp[32];
+    int len = snprintf(tmp, sizeof(tmp), "%lld", v);
+    int commas = (len - 1) / 3;
+    int outlen = len + commas;
+    if (len < 0 || (size_t)outlen >= n) { snprintf(out, n, "%lld", v); return; }
+    out[outlen] = '\0';
+    int oi = outlen - 1, cnt = 0;
+    for (int i = len - 1; i >= 0; i--) {
+        out[oi--] = tmp[i];
+        if (++cnt % 3 == 0 && i > 0) out[oi--] = ',';
+    }
+}
+
+/* Bottom-right reference bar. Its on-screen length always sits near a target
+ * width, but it is labelled with a round real-world distance whose unit adapts
+ * to the zoom (m -> km -> AU -> ly), so it stays meaningful from planet radii
+ * out to interstellar distances. */
+void draw_scale_legend(SimCamera cam) {
+    const double target_px = 150.0;          /* desired bar length          */
+    double metres_per_px = 1.0 / cam.scale;
+    double raw_m = target_px * metres_per_px; /* metres spanned by target_px */
+
+    /* Pick the largest unit in which the bar is at least one unit long. */
+    int u = 0;
+    for (int i = 0; i < SCALE_UNITS_N; i++) {
+        if (raw_m >= SCALE_UNITS[i].metres) u = i;
+    }
+    double value = nice_round(raw_m / SCALE_UNITS[u].metres);
+    double bar_m = value * SCALE_UNITS[u].metres;
+    float  bar_px = (float)(bar_m * cam.scale);
+
+    int W = GetScreenWidth();
+    int H = GetScreenHeight();
+    const int margin = 24;
+    float x1 = W - margin;
+    float x0 = x1 - bar_px;
+    float y  = H - margin;
+    const float tick = 6.0f;
+    const Color c = RAYWHITE;
+
+    DrawLineEx((Vector2){x0, y}, (Vector2){x1, y}, 2.0f, c);          /* bar  */
+    DrawLineEx((Vector2){x0, y - tick}, (Vector2){x0, y + tick}, 2.0f, c); /* ends */
+    DrawLineEx((Vector2){x1, y - tick}, (Vector2){x1, y + tick}, 2.0f, c);
+
+    char label[64];
+    if (value >= 1.0) {
+        char num[40];
+        group_commas((long long)llround(value), num, sizeof(num));
+        snprintf(label, sizeof(label), "%s %s", num, SCALE_UNITS[u].name);
+    } else {
+        snprintf(label, sizeof(label), "%g %s", value, SCALE_UNITS[u].name);
+    }
+    int tw = MeasureText(label, 16);
+    DrawText(label, (int)((x0 + x1) / 2 - tw / 2), (int)(y - 22), 16, c);
 }
