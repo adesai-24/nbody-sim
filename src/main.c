@@ -33,7 +33,7 @@ int main(void) {
     printf("initial energy: %.6e J\n", total_energy(bodies, n, G));
 
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
-    InitWindow(WIN_W, WIN_H, "orrery - N-body simulator");
+    InitWindow(WIN_W, WIN_H, "nbody - N-body simulator");
     SetTargetFPS(60);
 
     SimCamera cam = camera_default();

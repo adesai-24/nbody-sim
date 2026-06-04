@@ -124,7 +124,7 @@ void draw_hud(Planetoid *bodies, int n, long step, double energy, double dt, int
     const int line = 20;
     const Color fg = RAYWHITE;
 
-    DrawText("orrery", 10, y, 20, GOLD); y += line + 4;
+    DrawText("nbody", 10, y, 20, GOLD); y += line + 4;
 
     snprintf(buf, sizeof(buf), "step:   %ld", step);
     DrawText(buf, 10, y, 18, fg); y += line;
