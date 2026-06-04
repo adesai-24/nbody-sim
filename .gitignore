@@ -1,1 +1,5 @@
 .vscode
+
+# build artifacts
+orrery
+*.o

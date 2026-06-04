@@ -1,57 +1,75 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <raylib.h>
 #include "objects/obj_types.h"
 #include "body.h"
 #include "physics.h"
-#include <math.h>
+#include "render.h"
 
-#define G 6.674e-11
-#define EPS 1e6
-#define DT 3600.0
-#define SUBSTEPS 24
-#define MAX_STEPS 100000
+#define G          6.674e-11
+#define EPS        1e6
+#define DT         3600.0   /* one hour per physics step */
+#define SUBSTEPS   24       /* 24 steps/frame -> ~1 day of sim per frame */
+#define TRAIL_CAP  2000
+#define WIN_W      1280
+#define WIN_H      720
 
-
-void print_energy(Planetoid *bodies, int n, double grav_const) {
-    double KE = 0.0;
-    double PE = 0.0;
-    for (int i = 0; i < n; i++) {
-        Planetoid *a = &bodies[i];
-        KE += 0.5*a->mass*(a->vel.x*a->vel.x + a->vel.y*a->vel.y + a->vel.z*a->vel.z);
-        for (int j = i+1; j < n; j++) {
-            Planetoid *b = &bodies[j];
-            double dx = b->pos.x - a->pos.x;
-            double dy = b->pos.y - a->pos.y;
-            double dz = b->pos.z - a->pos.z;
-
-            double r = sqrt(dx*dx + dy*dy + dz*dz);
-            PE += -(grav_const) * b->mass * a->mass / r;
-        }
-    }
-    double total = KE + PE;
-    printf("Total Energy: %e\n", total);
-    printf("Kinetic Energy: %e\n", KE);
-    printf("Potential Energy: %e\n", PE);
-}
-
-int main() {
+int main(void) {
     int n = 2;
-    Planetoid *bodies = malloc(sizeof(Planetoid)*n);
-    Trail *trails = malloc(sizeof(Trail)*n);
-
-    bodies[0] = body_init((Vec3){0,0,0}, (Vec3){0,0,0}, 1.989e30, 69634e3, "Sun"); // hard-coded sun
-    bodies[1] = body_init((Vec3){1.496e11, 0, 0}, (Vec3){0,29783,0}, 5.972e24, 6371e3, "Earth"); // hard-coded earth
-
-    trails[0] = trail_init(300);
-    trails[1] = trail_init(300);
-
-    for (int step = 0; step < MAX_STEPS; step++) {
-        apply_grav(bodies, n, G, EPS);
-        integrate(bodies, n, DT);
-        if (step % 100 == 0) {
-            print_energy(bodies, n, G);
-        }
+    Planetoid *bodies = malloc(sizeof(Planetoid) * n);
+    Trail     *trails = malloc(sizeof(Trail) * n);
+    if (!bodies || !trails) {
+        fprintf(stderr, "allocation failed\n");
+        free(bodies);
+        free(trails);
+        return 1;
     }
+
+    bodies[0] = body_init((Vec3){0,0,0},        (Vec3){0,0,0},     1.989e30, 696340e3, "Sun");
+    bodies[1] = body_init((Vec3){1.496e11,0,0}, (Vec3){0,29783,0}, 5.972e24, 6371e3,   "Earth");
+
+    for (int i = 0; i < n; i++) trails[i] = trail_init(TRAIL_CAP);
+
+    printf("initial energy: %.6e J\n", total_energy(bodies, n, G));
+
+    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
+    InitWindow(WIN_W, WIN_H, "orrery - N-body simulator");
+    SetTargetFPS(60);
+
+    SimCamera cam = camera_default();
+    long step = 0;
+
+    /* Seed accelerations for the first half-kick of velocity Verlet. While
+     * paused no positions change, so this stays valid until we resume. */
+    apply_grav(bodies, n, G, EPS);
+
+    while (!WindowShouldClose()) {
+        handle_input(&cam);
+
+        if (!cam.paused) {
+            for (int s = 0; s < SUBSTEPS; s++) {
+                integrate(bodies, n, DT);          // half-kick + drift
+                apply_grav(bodies, n, G, EPS);     // forces at new positions
+                integrate_finish(bodies, n, DT);   // closing half-kick
+                for (int i = 0; i < n; i++)
+                    trail_push(&trails[i], bodies[i].pos);
+                step++;
+            }
+        }
+
+        double E = total_energy(bodies, n, G);
+
+        BeginDrawing();
+            ClearBackground(BLACK);
+            draw_trails(trails, bodies, n, cam);
+            draw_bodies(bodies, n, cam);
+            draw_hud(bodies, n, step, E, DT, GetFPS());
+            if (cam.paused)
+                DrawText("PAUSED", WIN_W / 2 - 40, 10, 24, YELLOW);
+        EndDrawing();
+    }
+
+    CloseWindow();
 
     for (int i = 0; i < n; i++) {
         body_free(&bodies[i]);
@@ -59,6 +77,5 @@ int main() {
     }
     free(bodies);
     free(trails);
-
     return 0;
 }

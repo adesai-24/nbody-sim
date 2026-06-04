@@ -16,9 +16,18 @@ typedef struct {
     int capacity, head, count;
 } Trail;
 
-void *vec_add(Vec3 *vec1, Vec3 vec2);
+/* View/camera state for the renderer. Kept free of any raylib types so the
+ * physics and object layers never need to depend on the graphics library. */
+typedef struct {
+    double scale;      // pixels per world-meter (zoom)
+    double off_x;      // screen-space pan offset, in pixels
+    double off_y;
+    int    paused;     // 0 = running, 1 = paused
+} SimCamera;
+
+void vec_add(Vec3 *vec1, Vec3 vec2);
 Vec3 vec_add_res(Vec3 v1, Vec3 v2);
-void *vec_scale(Vec3 *vec, double scaler);
+void vec_scale(Vec3 *vec, double scaler);
 Vec3 vec_scale_res(Vec3 vec, double scaler);
 double vec_magnitude(Vec3 vec);
 
