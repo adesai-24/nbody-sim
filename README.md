@@ -1,4 +1,4 @@
-# orrery
+# NBody
 
 A real-time 3D gravitational N-body simulator in C. Bodies attract each other
 under Newtonian gravity; their motion is integrated with velocity Verlet and
@@ -17,7 +17,7 @@ brew install raylib
 pacman -S mingw-w64-x86_64-raylib
 
 make
-./orrery
+./nbody-sim
 ```
 
 The Makefile uses `pkg-config` to locate raylib when available and otherwise

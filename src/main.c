@@ -56,9 +56,7 @@ int main(void) {
                 step++;
             }
         }
-
         double E = total_energy(bodies, n, G);
-
         BeginDrawing();
             ClearBackground(BLACK);
             draw_trails(trails, bodies, n, cam);
