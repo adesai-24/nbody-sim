@@ -15,7 +15,7 @@ SRC := src/main.c src/physics.c src/render.c \
        src/objects/body.c src/objects/obj_types.c
 OBJ := $(SRC:.c=.o)
 
-TARGET := orrery
+TARGET := nbody
 
 all: $(TARGET)
 
