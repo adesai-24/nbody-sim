@@ -56,6 +56,8 @@ int main(void) {
                 step++;
             }
         }
+        camera_autofit(&cam, bodies, n);
+
         double E = total_energy(bodies, n, G);
         BeginDrawing();
             ClearBackground(BLACK);
