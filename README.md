@@ -17,7 +17,7 @@ brew install raylib
 pacman -S mingw-w64-x86_64-raylib
 
 make
-./nbody-sim
+./nbody
 ```
 
 The Makefile uses `pkg-config` to locate raylib when available and otherwise
