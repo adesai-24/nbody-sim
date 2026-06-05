@@ -41,8 +41,8 @@ it again, or `R` to reset the view and re-enable it.
 
 Bodies are drawn at a size that tracks both their mass and the current zoom, so
 they shrink as you zoom out and grow as you zoom in. A map-style **scale bar** in
-the bottom-right shows the on-screen distance for a round number of AU (or km
-when zoomed in close).
+the bottom-right shows the on-screen distance for a round number of metres, km,
+AU, or ly as you zoom across scales.
 
 The interface uses a **glassmorphism** style over a dark navy gradient: the scene
 is rendered to an offscreen buffer, blurred, and the HUD is composited on top as
