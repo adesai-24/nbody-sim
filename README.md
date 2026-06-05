@@ -39,9 +39,18 @@ every body stays in frame as the system expands or collapses. Scrolling or
 dragging hands control back to you (turning auto-fit off); press `F` to toggle
 it again, or `R` to reset the view and re-enable it.
 
-The HUD overlays the step count, body count, total system energy, timestep, and
-FPS. Total energy should stay flat — that is the correctness check that the
-physics is conserving energy.
+Bodies are drawn at a size that tracks both their mass and the current zoom, so
+they shrink as you zoom out and grow as you zoom in. A map-style **scale bar** in
+the bottom-right shows the on-screen distance for a round number of AU (or km
+when zoomed in close).
+
+The HUD is a minimal overlay panel (rendered with the bundled
+[Geist Mono](https://github.com/vercel/geist-font) font, falling back to the
+built-in font if `assets/fonts/` is missing) showing the step count, body count,
+total system energy, timestep, FPS, and the current view mode (`AUTO`/`MANUAL`).
+Total energy should stay flat — that is the correctness check that the physics is
+conserving energy. Run the binary from the repository root so it can find
+`assets/fonts/`.
 
 ## Layout
 
