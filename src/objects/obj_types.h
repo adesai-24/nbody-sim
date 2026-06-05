@@ -23,6 +23,7 @@ typedef struct {
     double off_x;      // screen-space pan offset, in pixels
     double off_y;
     int    paused;     // 0 = running, 1 = paused
+    int    auto_fit;   // 1 = camera auto-rescales to keep all bodies in frame
 } SimCamera;
 
 void vec_add(Vec3 *vec1, Vec3 vec2);

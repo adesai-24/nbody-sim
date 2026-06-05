@@ -25,13 +25,19 @@ links `-lraylib` directly. Build flags: `-Wall -Wextra -O2 -std=c11`.
 
 ## Controls
 
-| Input            | Action            |
-| ---------------- | ----------------- |
-| Scroll wheel     | Zoom in / out     |
-| Left-click drag  | Pan the view      |
-| `R`              | Reset the camera  |
-| `Space`          | Pause / resume    |
-| `Esc`            | Quit              |
+| Input            | Action                       |
+| ---------------- | ---------------------------- |
+| Scroll wheel     | Zoom in / out (manual)       |
+| Left-click drag  | Pan the view                 |
+| `F`              | Toggle auto fit-to-view zoom |
+| `R`              | Reset the camera             |
+| `Space`          | Pause / resume               |
+| `Esc`            | Quit                         |
+
+By default the camera **auto-fits**: it continuously rescales and re-centers so
+every body stays in frame as the system expands or collapses. Scrolling or
+dragging hands control back to you (turning auto-fit off); press `F` to toggle
+it again, or `R` to reset the view and re-enable it.
 
 The HUD overlays the step count, body count, total system energy, timestep, and
 FPS. Total energy should stay flat — that is the correctness check that the
