@@ -44,12 +44,18 @@ they shrink as you zoom out and grow as you zoom in. A map-style **scale bar** i
 the bottom-right shows the on-screen distance for a round number of AU (or km
 when zoomed in close).
 
-The HUD is a minimal overlay panel (rendered with the bundled
-[Geist Mono](https://github.com/vercel/geist-font) font, falling back to the
-built-in font if `assets/fonts/` is missing) showing the step count, body count,
-total system energy, timestep, FPS, and the current view mode (`AUTO`/`MANUAL`).
-Total energy should stay flat — that is the correctness check that the physics is
-conserving energy. Run the binary from the repository root so it can find
+The interface uses a **glassmorphism** style over a dark navy gradient: the scene
+is rendered to an offscreen buffer, blurred, and the HUD is composited on top as
+a frosted-glass card (a small GLSL shader masks the blurred backdrop to a rounded
+rectangle and adds the tint and edge highlight). Bodies are drawn with a soft
+glow. Text uses the bundled [Outfit](https://github.com/Outfitio/Outfit-fonts)
+sans-serif. The card shows the step count, body count, total system energy,
+timestep, FPS, and the current view mode (`AUTO`/`MANUAL`). Total energy should
+stay flat — that is the correctness check that the physics is conserving energy.
+
+The renderer needs OpenGL 3.3; if the glass shader can't load it falls back to a
+plain translucent panel, and if `assets/fonts/` is missing it falls back to the
+built-in font. Run the binary from the repository root so it can find
 `assets/fonts/`.
 
 ## Layout

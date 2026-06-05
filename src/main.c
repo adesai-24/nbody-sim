@@ -60,13 +60,7 @@ int main(void) {
         camera_autofit(&cam, bodies, n);
 
         double E = total_energy(bodies, n, G);
-        BeginDrawing();
-            ClearBackground(BLACK);
-            draw_trails(trails, bodies, n, cam);
-            draw_bodies(bodies, n, cam);
-            draw_scale_bar(cam);
-            draw_hud(bodies, n, step, E, DT, GetFPS(), cam);
-        EndDrawing();
+        render_frame(trails, bodies, n, step, E, DT, GetFPS(), cam);
     }
 
     ui_shutdown();
