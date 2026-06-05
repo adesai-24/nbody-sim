@@ -1,4 +1,4 @@
-# nbody
+# NBody
 
 A real-time 3D gravitational N-body simulator in C. Bodies attract each other
 under Newtonian gravity; their motion is integrated with velocity Verlet and
@@ -39,12 +39,24 @@ every body stays in frame as the system expands or collapses. Scrolling or
 dragging hands control back to you (turning auto-fit off); press `F` to toggle
 it again, or `R` to reset the view and re-enable it.
 
-A bottom-right scale legend adapts units (m/km/AU/ly) with zoom so distances
-remain readable across very different view scales.
+Bodies are drawn at a size that tracks both their mass and the current zoom, so
+they shrink as you zoom out and grow as you zoom in. A map-style **scale bar** in
+the bottom-right shows the on-screen distance for a round number of metres, km,
+AU, or ly as you zoom across scales.
 
-The HUD overlays the step count, body count, total system energy, timestep, and
-FPS. Total energy should stay flat — that is the correctness check that the
-physics is conserving energy.
+The interface uses a **glassmorphism** style over a dark navy gradient: the scene
+is rendered to an offscreen buffer, blurred, and the HUD is composited on top as
+a frosted-glass card (a small GLSL shader masks the blurred backdrop to a rounded
+rectangle and adds the tint and edge highlight). Bodies are drawn with a soft
+glow. Text uses the bundled [Outfit](https://github.com/Outfitio/Outfit-fonts)
+sans-serif. The card shows the step count, body count, total system energy,
+timestep, FPS, and the current view mode (`AUTO`/`MANUAL`). Total energy should
+stay flat — that is the correctness check that the physics is conserving energy.
+
+The renderer needs OpenGL 3.3; if the glass shader can't load it falls back to a
+plain translucent panel, and if `assets/fonts/` is missing it falls back to the
+built-in font. Run the binary from the repository root so it can find
+`assets/fonts/`.
 
 ## Layout
 

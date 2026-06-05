@@ -35,6 +35,7 @@ int main(void) {
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(WIN_W, WIN_H, "nbody - N-body simulator");
     SetTargetFPS(60);
+    ui_init();
 
     SimCamera cam = camera_default();
     long step = 0;
@@ -56,21 +57,13 @@ int main(void) {
                 step++;
             }
         }
-
         camera_autofit(&cam, bodies, n);
-        double E = total_energy(bodies, n, G);
 
-        BeginDrawing();
-            ClearBackground(BLACK);
-            draw_trails(trails, bodies, n, cam);
-            draw_bodies(bodies, n, cam);
-            draw_hud(bodies, n, step, E, DT, GetFPS());
-            draw_scale_legend(cam);
-            if (cam.paused)
-                DrawText("PAUSED", WIN_W / 2 - 40, 10, 24, YELLOW);
-        EndDrawing();
+        double E = total_energy(bodies, n, G);
+        render_frame(trails, bodies, n, step, E, DT, GetFPS(), cam);
     }
 
+    ui_shutdown();
     CloseWindow();
 
     for (int i = 0; i < n; i++) {
