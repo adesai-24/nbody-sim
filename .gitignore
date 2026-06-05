@@ -1,5 +1,5 @@
 .vscode
 
 # build artifacts
-orrery
+nbody
 *.o
