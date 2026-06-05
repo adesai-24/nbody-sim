@@ -20,12 +20,12 @@ TARGET := nbody
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
-$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDLIBS)
+	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDLIBS)
 
 %.o: %.c
-$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-rm -f $(OBJ) $(TARGET)
+	rm -f $(OBJ) $(TARGET)
 
 .PHONY: all clean
