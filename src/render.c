@@ -129,6 +129,7 @@ void handle_input(SimCamera *cam) {
         int was_paused = cam->paused;
         *cam = camera_default();
         cam->paused = was_paused;   /* reset the view, not the run state */
+        cam->auto_fit = 1;
     }
 
     if (IsKeyPressed(KEY_SPACE)) {
