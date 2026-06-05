@@ -1,4 +1,4 @@
-# NBody
+# nbody
 
 A real-time 3D gravitational N-body simulator in C. Bodies attract each other
 under Newtonian gravity; their motion is integrated with velocity Verlet and
