@@ -3,6 +3,12 @@
 
 #include "objects/obj_types.h"
 
+/* Load UI fonts, the glass shader, and offscreen render targets (call once
+ * after InitWindow). ui_shutdown() frees them (call before CloseWindow).
+ * Fonts fall back to the built-in font if assets/fonts/ is missing. */
+void ui_init(void);
+void ui_shutdown(void);
+
 /* Build a camera centred on the window with a sensible default zoom
  * (one AU spans DEFAULT_AU_PX pixels). Call after InitWindow(). */
 SimCamera camera_default(void);
@@ -16,13 +22,10 @@ void handle_input(SimCamera *cam);
  * body stays in frame as the system expands or collapses. No-op otherwise. */
 void camera_autofit(SimCamera *cam, const Planetoid *bodies, int n);
 
-/* Draw fading motion trails behind each body. */
-void draw_trails(Trail *trails, Planetoid *bodies, int n, SimCamera cam);
-
-/* Draw each body as a colored circle, sized by the cube root of its mass. */
-void draw_bodies(Planetoid *bodies, int n, SimCamera cam);
-
-/* Overlay text: step count, body count, total energy, dt, FPS, controls. */
-void draw_hud(Planetoid *bodies, int n, long step, double energy, double dt, int fps);
+/* Render one full frame: the gradient backdrop, motion trails and bodies, a
+ * blurred copy of that scene, and the frosted-glass HUD composited on top.
+ * Call between (and instead of) BeginDrawing()/EndDrawing() in the loop. */
+void render_frame(Trail *trails, Planetoid *bodies, int n,
+                  long step, double energy, double dt, int fps, SimCamera cam);
 
 #endif
