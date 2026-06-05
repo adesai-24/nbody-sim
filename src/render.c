@@ -14,6 +14,11 @@
 
 #define ZOOM_STEP      1.1        /* zoom multiplier per wheel notch        */
 
+#define FIT_MARGIN     0.85       /* fraction of the window the bodies fill  */
+#define FIT_SMOOTH     0.10       /* per-frame lerp toward the fitted view   */
+#define FIT_MIN_SPAN   (0.2 * AU_M) /* floor on span so a single/clustered
+                                      set of bodies doesn't zoom to infinity */
+
 /* Bodies are colored by index, cycling through this palette. */
 static const Color PALETTE[] = {
     GOLD, SKYBLUE, RED, GREEN, ORANGE,
@@ -52,13 +57,56 @@ SimCamera camera_default(void) {
     c.off_x = GetScreenWidth() / 2.0;
     c.off_y = GetScreenHeight() / 2.0;
     c.paused = 0;
+    c.auto_fit = 1;
     return c;
+}
+
+/* Auto fit-to-view: each frame, rescale and re-center so every body stays in
+ * frame as the system expands or collapses. The target view (scale + offsets
+ * that frame the bodies' bounding box) is approached with a per-frame lerp so
+ * the zoom glides instead of snapping. A manual scroll/drag clears auto_fit;
+ * F toggles it and R re-enables it. */
+void camera_autofit(SimCamera *cam, const Planetoid *bodies, int n) {
+    if (!cam->auto_fit || n <= 0) return;
+
+    double min_x, max_x, min_y, max_y;
+    min_x = max_x = bodies[0].pos.x;
+    min_y = max_y = bodies[0].pos.y;
+    for (int i = 1; i < n; i++) {
+        double x = bodies[i].pos.x, y = bodies[i].pos.y;
+        if (x < min_x) min_x = x;
+        if (x > max_x) max_x = x;
+        if (y < min_y) min_y = y;
+        if (y > max_y) max_y = y;
+    }
+
+    double cx = 0.5 * (min_x + max_x);
+    double cy = 0.5 * (min_y + max_y);
+    double span_x = max_x - min_x;
+    double span_y = max_y - min_y;
+    if (span_x < FIT_MIN_SPAN) span_x = FIT_MIN_SPAN;
+    if (span_y < FIT_MIN_SPAN) span_y = FIT_MIN_SPAN;
+
+    int w = GetScreenWidth(), h = GetScreenHeight();
+    double scale_x = (w * FIT_MARGIN) / span_x;
+    double scale_y = (h * FIT_MARGIN) / span_y;
+    double target_scale = scale_x < scale_y ? scale_x : scale_y;
+
+    /* Place the bounding-box center at the window center (screen +y is down,
+     * world +y is up, so the y offset adds rather than subtracts). */
+    double target_off_x = w / 2.0 - cx * target_scale;
+    double target_off_y = h / 2.0 + cy * target_scale;
+
+    cam->scale += (target_scale - cam->scale) * FIT_SMOOTH;
+    cam->off_x += (target_off_x - cam->off_x) * FIT_SMOOTH;
+    cam->off_y += (target_off_y - cam->off_y) * FIT_SMOOTH;
 }
 
 void handle_input(SimCamera *cam) {
     float wheel = GetMouseWheelMove();
     if (wheel != 0.0f) {
         /* Zoom about the cursor: keep the world point under the mouse fixed. */
+        cam->auto_fit = 0;   /* manual zoom takes over from auto-fit */
         Vector2 m = GetMousePosition();
         double f = pow(ZOOM_STEP, wheel);
         cam->off_x = m.x - (m.x - cam->off_x) * f;
@@ -67,9 +115,14 @@ void handle_input(SimCamera *cam) {
     }
 
     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        cam->auto_fit = 0;   /* manual pan takes over from auto-fit */
         Vector2 d = GetMouseDelta();
         cam->off_x += d.x;
         cam->off_y += d.y;
+    }
+
+    if (IsKeyPressed(KEY_F)) {
+        cam->auto_fit = !cam->auto_fit;
     }
 
     if (IsKeyPressed(KEY_R)) {
@@ -146,7 +199,7 @@ void draw_hud(Planetoid *bodies, int n, long step, double energy, double dt, int
     snprintf(buf, sizeof(buf), "fps:    %d", fps);
     DrawText(buf, 10, y, 18, fg); y += line;
 
-    DrawText("[scroll] zoom  [drag] pan  [R] reset  [space] pause",
+    DrawText("[scroll] zoom  [drag] pan  [F] auto-fit  [R] reset  [space] pause",
              10, GetScreenHeight() - 24, 16, GRAY);
 }
 
