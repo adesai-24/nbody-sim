@@ -13,19 +13,35 @@ endif
 
 SRC := src/main.c src/physics.c src/render.c \
        src/objects/body.c src/objects/obj_types.c
-OBJ := $(SRC:.c=.o)
+BUILD_DIR := build
+OBJ := $(SRC:%.c=$(BUILD_DIR)/%.o)
 
 TARGET := nbody
+
+ifeq ($(OS),Windows_NT)
+  MKDIR_P = if not exist "$(subst /,\,$(patsubst %/,%,$(dir $@)))" mkdir "$(subst /,\,$(patsubst %/,%,$(dir $@)))"
+  CLEAN_BUILD = if exist "$(BUILD_DIR)" rmdir /s /q "$(BUILD_DIR)"
+  CLEAN_TARGET = if exist "$(TARGET)" del /q "$(TARGET)"
+  CLEAN_TARGET_EXE = if exist "$(TARGET).exe" del /q "$(TARGET).exe"
+else
+  MKDIR_P = mkdir -p $(dir $@)
+  CLEAN_BUILD = rm -rf $(BUILD_DIR)
+  CLEAN_TARGET = rm -f $(TARGET)
+  CLEAN_TARGET_EXE =
+endif
 
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDLIBS)
 
-%.o: %.c
+$(BUILD_DIR)/%.o: %.c
+	$(MKDIR_P)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ) $(TARGET)
+	$(CLEAN_BUILD)
+	$(CLEAN_TARGET)
+	$(CLEAN_TARGET_EXE)
 
 .PHONY: all clean
