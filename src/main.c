@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <raylib.h>
 #include "objects/obj_types.h"
-#include "body.h"
+#include "objects/vec3.h"
+#include "objects/sim_state.h"
+#include "barnes_hut/barnes_hut.h"
 #include "physics.h"
 #include "render.h"
 
@@ -24,7 +26,7 @@ void init(int n) {
 
 int main(void) {
     init(N);
-    if (!bodies || !trails) {
+    if (!bodies || !trails || !pool) {
         fprintf(stderr, "allocation failed\n");
         free(bodies);
         free(trails);
@@ -80,9 +82,9 @@ int main(void) {
         body_free(&bodies[i]);
         trail_free(&trails[i]);
     }
-    free_node(pool);
+    free(pool);
     free(bodies);
     free(trails);
-    free(pool);
+    // free(pool);
     return 0;
 }
