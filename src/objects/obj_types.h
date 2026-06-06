@@ -36,25 +36,6 @@ typedef struct OctNode {
     struct OctNode *children[8];
 } OctNode;
 
-// extern variable definitions
-extern Planetoid *bodies;
-extern Trail *trails;
-extern OctNode *pool;
-extern int pool_idx;
 
-
-// Vec helper functions
-void vec_add(Vec3 *vec1, Vec3 vec2);
-Vec3 vec_add_res(Vec3 v1, Vec3 v2);
-void vec_scale(Vec3 *vec, double scaler);
-Vec3 vec_scale_res(Vec3 vec, double scaler);
-double vec_magnitude(Vec3 vec);
-
-// OctNode helper functions
-void tree_insert(OctNode *node, Planetoid *bodies, int body_idx);
-OctNode *create_child(OctNode *parent, int oct);
-int find_octant(Planetoid body, Vec3 node);
-OctNode *alloc_node();
-void free_node(OctNode *node);
 
 #endif
