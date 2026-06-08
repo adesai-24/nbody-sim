@@ -87,3 +87,21 @@ OctNode *alloc_node() {
     for (int i = 0; i < 8; i++) node->children[i] = NULL;
     return node;
 }
+
+void tree_mass(OctNode *node) {
+    if(!node) return;
+    if (node->body_idx != -1) return;
+    node->mass = 0;
+    node->com = (Vec3){0,0,0};
+    for (int i = 0; i < 8; i++) {
+        if (node->children[i] == NULL) continue;
+        tree_mass(node->children[i]);
+        node->mass += node->children[i]->mass;
+        vec_add(&(node->com), vec_scale_res(node->children[i]->com, node->children[i]->mass));
+    }
+    vec_scale(&(node->com), (1/(node->mass)));
+}
+
+void force_from_tree(Planetoid planet, OctNode *node) {
+    
+}

@@ -1,5 +1,5 @@
 #ifndef SIM_STATE_H
-#define SIM_STATE_h
+#define SIM_STATE_H
 
 #include "obj_types.h"
 

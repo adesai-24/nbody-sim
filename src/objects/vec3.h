@@ -1,5 +1,5 @@
 #ifndef VEC3_H
-#define VEC3_h
+#define VEC3_H
 
 #include "obj_types.h"
 
