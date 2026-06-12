@@ -11,7 +11,7 @@ else
   LDLIBS += -lraylib
 endif
 
-SRC := src/main.c src/physics.c src/render.c \
+SRC := src/main.c src/physics.c src/render.c src/scenarios.c \
        src/objects/body.c src/objects/obj_types.c
 BUILD_DIR := build
 OBJ := $(SRC:%.c=$(BUILD_DIR)/%.o)

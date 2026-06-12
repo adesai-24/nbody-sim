@@ -25,14 +25,32 @@ links `-lraylib` directly. Build flags: `-Wall -Wextra -O2 -std=c11`.
 
 ## Controls
 
-| Input            | Action                       |
-| ---------------- | ---------------------------- |
-| Scroll wheel     | Zoom in / out (manual)       |
-| Left-click drag  | Pan the view                 |
-| `F`              | Toggle auto fit-to-view zoom |
-| `R`              | Reset the camera             |
-| `Space`          | Pause / resume               |
-| `Esc`            | Quit                         |
+| Input            | Action                              |
+| ---------------- | ----------------------------------- |
+| Scroll wheel     | Zoom in / out (manual)              |
+| Left-click drag  | Pan the view                        |
+| `F`              | Toggle auto fit-to-view zoom        |
+| `R`              | Reset the camera                    |
+| `Space`          | Pause / resume                      |
+| `1`              | Load solar system (default)         |
+| `2`              | Load binary star + circumbinary planets |
+| `3`              | Load random stellar cluster         |
+| `A`              | Add a random body on a circular orbit |
+| `D`              | Remove the most recently added body |
+| `Esc`            | Quit                                |
+
+The three built-in scenarios are:
+
+- **Solar system** — Sun and all eight planets with real SI masses, radii, and
+  mean circular-orbit velocities.
+- **Binary star** — Two unequal stars (Alpha 2 M☉, Beta 1.5 M☉) orbiting their
+  common centre of mass (~107-day period), plus two circumbinary planets
+  (Kepler-b and Kepler-c) on stable outer orbits.
+- **Random cluster** — A compact central mass (think nuclear star cluster)
+  surrounded by 19 stellar-mass bodies in random circular orbits.
+
+`A` and `D` work in any scenario; added bodies are placed on near-circular
+orbits around the system's centre of mass.
 
 By default the camera **auto-fits**: it continuously rescales and re-centers so
 every body stays in frame as the system expands or collapses. Scrolling or
@@ -62,9 +80,11 @@ built-in font. Run the binary from the repository root so it can find
 
 ```
 src/
-  main.c                 entry point: owns the bodies, runs the window loop
+  main.c                 entry point: window loop, scene switching, add/remove bodies
   physics.h / physics.c  apply_grav(), velocity-Verlet integrate(), total_energy()
   render.h  / render.c   camera, draw_bodies(), draw_trails(), draw_hud()
+  scenarios.h / scenarios.c  preset scenes (solar system, binary star, cluster)
+                             and add_random_body()
   objects/
     obj_types.h          Vec3, Planetoid, Trail, SimCamera
     obj_types.c          vector helpers

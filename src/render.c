@@ -428,11 +428,12 @@ static void draw_scale_bar(SimCamera cam) {
     ui_text_right(ui_font, label, x1, y - 20.0f, 14.0f, c);
 }
 
-static void draw_hud(int n, long step, double energy, double dt, int fps, SimCamera cam) {
+static void draw_hud(int n, long step, double energy, double dt, int fps,
+                     SimCamera cam, const char *scene_name) {
     const float x = 22.0f, y = 22.0f, pad = 18.0f, w = 244.0f;
     const float title_sz = 24.0f, row_sz = 15.0f, row_h = 26.0f;
 
-    const int   rows = 5;
+    const int   rows = 6;
     const float h = pad + title_sz + 14.0f + rows * row_h + pad - 8.0f;
 
     glass_panel((Rectangle){x, y, w, h}, 18.0f);
@@ -455,6 +456,7 @@ static void draw_hud(int n, long step, double energy, double dt, int fps, SimCam
             ty += row_h;                                                        \
         } while (0)
 
+    ROW("scene",  "%s", scene_name);
     ROW("step",   "%ld", step);
     ROW("bodies", "%d", n);
     ROW("energy", "%.3e", energy);
@@ -471,14 +473,17 @@ static void draw_hud(int n, long step, double energy, double dt, int fps, SimCam
         ui_text(ui_font_bold, s, bx, 24.0f, sz, UI_TITLE);
     }
 
-    ui_text(ui_font, "scroll  zoom      drag  pan      F  auto-fit      R  reset      space  pause",
+    ui_text(ui_font,
+            "scroll  zoom      drag  pan      F  auto-fit      R  reset"
+            "      space  pause      1/2/3  scene      A  add      D  del",
             22.0f, GetScreenHeight() - 28.0f, 13.0f, UI_MUTED);
 }
 
 /* ---- frame orchestration ---------------------------------------------- */
 
 void render_frame(Trail *trails, Planetoid *bodies, int n,
-                  long step, double energy, double dt, int fps, SimCamera cam) {
+                  long step, double energy, double dt, int fps, SimCamera cam,
+                  const char *scene_name) {
     ensure_targets();
 
     /* 1. draw the crisp scene into its own buffer */
@@ -509,7 +514,7 @@ void render_frame(Trail *trails, Planetoid *bodies, int n,
             (Rectangle){0, 0, (float)rt_w, -(float)rt_h},
             (Rectangle){0, 0, (float)rt_w, (float)rt_h},
             (Vector2){0, 0}, 0.0f, WHITE);
-        draw_hud(n, step, energy, dt, fps, cam);
+        draw_hud(n, step, energy, dt, fps, cam, scene_name);
         draw_scale_bar(cam);
     EndDrawing();
 }
