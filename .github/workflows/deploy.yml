@@ -1,0 +1,68 @@
+name: Build and Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deployment at a time; cancel the in-progress one if a newer push
+# arrives, but let the currently-deploying run finish.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.64
+
+      - name: Cache raylib WASM static library
+        id: cache-raylib
+        uses: actions/cache@v4
+        with:
+          path: raylib-web
+          key: raylib-5.0-emsdk-3.1.64-v1
+
+      - name: Build raylib for PLATFORM_WEB
+        if: steps.cache-raylib.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch 5.0 https://github.com/raysan5/raylib.git
+          mkdir -p raylib-web/include raylib-web/lib
+          cd raylib/src
+          make PLATFORM=PLATFORM_WEB \
+               RAYLIB_LIBTYPE=STATIC \
+               RAYLIB_BUILD_MODE=RELEASE \
+               -j$(nproc)
+          cp raylib.h rlgl.h raymath.h ../../raylib-web/include/
+          cp libraylib.a ../../raylib-web/lib/
+
+      - name: Build nbody (WASM)
+        run: make web RAYLIB_WEB=raylib-web
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

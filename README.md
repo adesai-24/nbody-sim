@@ -1,8 +1,19 @@
 # NBody
 
-A real-time 3D gravitational N-body simulator in C. Bodies attract each other
+**[▶ Try it live in your browser](https://adesai-24.github.io/nbody-sim/)**
+
+A real-time gravitational N-body simulator in C. Bodies attract each other
 under Newtonian gravity; their motion is integrated with velocity Verlet and
 rendered live with [raylib](https://www.raylib.com/).
+
+## Live demo
+
+The simulator is automatically compiled to WebAssembly and deployed to
+GitHub Pages on every push to `main`.  To enable this for your own fork:
+
+1. Go to **Settings → Pages → Source** and choose **GitHub Actions**.
+2. Push to `main` (or trigger the workflow manually via the Actions tab).
+3. The page will be live at `https://<user>.github.io/<repo>/`.
 
 ## Building
 
@@ -18,6 +29,26 @@ pacman -S mingw-w64-x86_64-raylib
 
 make
 ./nbody
+```
+
+### Web / WASM build
+
+```sh
+# 1. Build raylib for WebAssembly (once)
+git clone --depth 1 --branch 5.0 https://github.com/raysan5/raylib.git
+cd raylib/src
+make PLATFORM=PLATFORM_WEB RAYLIB_LIBTYPE=STATIC RAYLIB_BUILD_MODE=RELEASE
+mkdir -p ../../raylib-web/include ../../raylib-web/lib
+cp raylib.h rlgl.h raymath.h ../../raylib-web/include/
+cp libraylib.a ../../raylib-web/lib/
+cd ../..
+
+# 2. Build the simulator
+make web RAYLIB_WEB=raylib-web
+
+# 3. Serve locally (Python 3)
+python3 -m http.server 8080 --directory web
+# then open http://localhost:8080
 ```
 
 The Makefile uses `pkg-config` to locate raylib when available and otherwise
@@ -89,6 +120,10 @@ src/
     obj_types.h          Vec3, Planetoid, Trail, SimCamera
     obj_types.c          vector helpers
     body.h / body.c      body_init/free, trail_init/push/free
+web/
+  shell.html             HTML page hosting the WebAssembly canvas
+.github/workflows/
+  deploy.yml             CI: builds WASM with Emscripten, deploys to GitHub Pages
 ```
 
 ## Physics notes

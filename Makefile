@@ -44,4 +44,26 @@ clean:
 	$(CLEAN_TARGET)
 	$(CLEAN_TARGET_EXE)
 
-.PHONY: all clean
+# --- web / WASM build --------------------------------------------------------
+# Requires Emscripten in PATH and a raylib PLATFORM_WEB static build.
+# Usage:  make web RAYLIB_WEB=/path/to/raylib-web
+#
+# The CI workflow builds raylib for web and passes its output directory here.
+RAYLIB_WEB ?= raylib-web
+WEB_DIR    := web
+
+WEB_FLAGS := -Wall -Wextra -Os -std=c11 -Isrc -Isrc/objects \
+             -DPLATFORM_WEB \
+             -I$(RAYLIB_WEB)/include \
+             -s USE_GLFW=3 \
+             -s TOTAL_MEMORY=67108864 \
+             -s ALLOW_MEMORY_GROWTH=1 \
+             --preload-file assets \
+             --shell-file $(WEB_DIR)/shell.html
+
+web: $(WEB_DIR)/index.html
+
+$(WEB_DIR)/index.html: $(SRC) $(WEB_DIR)/shell.html
+	emcc $(SRC) $(RAYLIB_WEB)/lib/libraylib.a $(WEB_FLAGS) -o $@
+
+.PHONY: all clean web

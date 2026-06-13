@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nbody — N-body Simulator</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #0c101a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: monospace;
+    }
+    #canvas {
+      display: block;
+      max-width: 100vw;
+      max-height: 100vh;
+    }
+    #status {
+      color: #96d6ff;
+      font-size: 13px;
+      margin-top: 10px;
+      min-height: 18px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" tabindex="-1"
+          oncontextmenu="event.preventDefault()"></canvas>
+  <div id="status">Downloading...</div>
+
+  <script>
+    var statusEl = document.getElementById('status');
+    var Module = {
+      canvas: document.getElementById('canvas'),
+      setStatus: function(text) {
+        statusEl.textContent = text || '';
+        if (!text) statusEl.style.visibility = 'hidden';
+      },
+      totalDependencies: 0,
+      monitorRunDependencies: function(left) {
+        this.totalDependencies = Math.max(this.totalDependencies, left);
+        var done = this.totalDependencies - left;
+        Module.setStatus(left
+          ? 'Loading assets… (' + done + ' / ' + this.totalDependencies + ')'
+          : '');
+      },
+      onRuntimeInitialized: function() {
+        Module.setStatus('');
+      }
+    };
+    window.onerror = function(msg) {
+      Module.setStatus('Error: ' + msg);
+    };
+  </script>
+  {{{ SCRIPT }}}
+</body>
+</html>
