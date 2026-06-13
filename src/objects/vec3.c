@@ -1,4 +1,5 @@
 #include "vec3.h"
+#include <math.h>
 
 void vec_add(Vec3 *dest, Vec3 src) {
     dest->x += src.x;
