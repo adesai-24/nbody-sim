@@ -12,7 +12,8 @@ else
 endif
 
 SRC := src/main.c src/physics.c src/render.c src/scenarios.c \
-       src/objects/body.c src/objects/obj_types.c
+       src/objects/body.c src/objects/vec3.c src/objects/sim_state.c \
+       src/barnes_hut/barnes_hut.c
 BUILD_DIR := build
 OBJ := $(SRC:%.c=$(BUILD_DIR)/%.o)
 
