@@ -26,6 +26,7 @@ void camera_autofit(SimCamera *cam, const Planetoid *bodies, int n);
  * blurred copy of that scene, and the frosted-glass HUD composited on top.
  * Call between (and instead of) BeginDrawing()/EndDrawing() in the loop. */
 void render_frame(Trail *trails, Planetoid *bodies, int n,
-                  long step, double energy, double dt, int fps, SimCamera cam);
+                  long step, double energy, double dt, int fps, SimCamera cam,
+                  const char *scene_name);
 
 #endif

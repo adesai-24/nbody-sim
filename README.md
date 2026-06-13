@@ -1,8 +1,19 @@
 # NBody
 
-A real-time 3D gravitational N-body simulator in C. Bodies attract each other
+**[▶ Try it live in your browser](https://adesai-24.github.io/nbody-sim/)**
+
+A real-time gravitational N-body simulator in C. Bodies attract each other
 under Newtonian gravity; their motion is integrated with velocity Verlet and
 rendered live with [raylib](https://www.raylib.com/).
+
+## Live demo
+
+The simulator is automatically compiled to WebAssembly and deployed to
+GitHub Pages on every push to `main`.  To enable this for your own fork:
+
+1. Go to **Settings → Pages → Source** and choose **GitHub Actions**.
+2. Push to `main` (or trigger the workflow manually via the Actions tab).
+3. The page will be live at `https://<user>.github.io/<repo>/`.
 
 ## Building
 
@@ -20,19 +31,57 @@ make
 ./nbody
 ```
 
+### Web / WASM build
+
+```sh
+# 1. Build raylib for WebAssembly (once)
+git clone --depth 1 --branch 5.0 https://github.com/raysan5/raylib.git
+cd raylib/src
+make PLATFORM=PLATFORM_WEB RAYLIB_LIBTYPE=STATIC RAYLIB_BUILD_MODE=RELEASE
+mkdir -p ../../raylib-web/include ../../raylib-web/lib
+cp raylib.h rlgl.h raymath.h ../../raylib-web/include/
+cp libraylib.a ../../raylib-web/lib/
+cd ../..
+
+# 2. Build the simulator
+make web RAYLIB_WEB=raylib-web
+
+# 3. Serve locally (Python 3)
+python3 -m http.server 8080 --directory web
+# then open http://localhost:8080
+```
+
 The Makefile uses `pkg-config` to locate raylib when available and otherwise
 links `-lraylib` directly. Build flags: `-Wall -Wextra -O2 -std=c11`.
 
 ## Controls
 
-| Input            | Action                       |
-| ---------------- | ---------------------------- |
-| Scroll wheel     | Zoom in / out (manual)       |
-| Left-click drag  | Pan the view                 |
-| `F`              | Toggle auto fit-to-view zoom |
-| `R`              | Reset the camera             |
-| `Space`          | Pause / resume               |
-| `Esc`            | Quit                         |
+| Input            | Action                              |
+| ---------------- | ----------------------------------- |
+| Scroll wheel     | Zoom in / out (manual)              |
+| Left-click drag  | Pan the view                        |
+| `F`              | Toggle auto fit-to-view zoom        |
+| `R`              | Reset the camera                    |
+| `Space`          | Pause / resume                      |
+| `1`              | Load solar system (default)         |
+| `2`              | Load binary star + circumbinary planets |
+| `3`              | Load random stellar cluster         |
+| `A`              | Add a random body on a circular orbit |
+| `D`              | Remove the most recently added body |
+| `Esc`            | Quit                                |
+
+The three built-in scenarios are:
+
+- **Solar system** — Sun and all eight planets with real SI masses, radii, and
+  mean circular-orbit velocities.
+- **Binary star** — Two unequal stars (Alpha 2 M☉, Beta 1.5 M☉) orbiting their
+  common centre of mass (~107-day period), plus two circumbinary planets
+  (Kepler-b and Kepler-c) on stable outer orbits.
+- **Random cluster** — A compact central mass (think nuclear star cluster)
+  surrounded by 19 stellar-mass bodies in random circular orbits.
+
+`A` and `D` work in any scenario; added bodies are placed on near-circular
+orbits around the system's centre of mass.
 
 By default the camera **auto-fits**: it continuously rescales and re-centers so
 every body stays in frame as the system expands or collapses. Scrolling or
@@ -62,13 +111,19 @@ built-in font. Run the binary from the repository root so it can find
 
 ```
 src/
-  main.c                 entry point: owns the bodies, runs the window loop
+  main.c                 entry point: window loop, scene switching, add/remove bodies
   physics.h / physics.c  apply_grav(), velocity-Verlet integrate(), total_energy()
   render.h  / render.c   camera, draw_bodies(), draw_trails(), draw_hud()
+  scenarios.h / scenarios.c  preset scenes (solar system, binary star, cluster)
+                             and add_random_body()
   objects/
     obj_types.h          Vec3, Planetoid, Trail, SimCamera
     obj_types.c          vector helpers
     body.h / body.c      body_init/free, trail_init/push/free
+web/
+  shell.html             HTML page hosting the WebAssembly canvas
+.github/workflows/
+  deploy.yml             CI: builds WASM with Emscripten, deploys to GitHub Pages
 ```
 
 ## Physics notes
