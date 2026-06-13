@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-Planetoid body_init(Vec3 pos, Vec3 vel, long double mass, long double radius, char *name) {
+Planetoid body_init(Vec3 pos, Vec3 vel, long double mass, long double radius, const char *name) {
     Planetoid new_planet;
     new_planet.pos = pos;
     new_planet.vel = vel;

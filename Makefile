@@ -11,21 +11,59 @@ else
   LDLIBS += -lraylib
 endif
 
-SRC := src/main.c src/physics.c src/render.c \
+SRC := src/main.c src/physics.c src/render.c src/scenarios.c \
        src/objects/body.c src/objects/obj_types.c
-OBJ := $(SRC:.c=.o)
+BUILD_DIR := build
+OBJ := $(SRC:%.c=$(BUILD_DIR)/%.o)
 
 TARGET := nbody
+
+ifeq ($(OS),Windows_NT)
+  MKDIR_P = if not exist "$(subst /,\,$(patsubst %/,%,$(dir $@)))" mkdir "$(subst /,\,$(patsubst %/,%,$(dir $@)))"
+  CLEAN_BUILD = if exist "$(BUILD_DIR)" rmdir /s /q "$(BUILD_DIR)"
+  CLEAN_TARGET = if exist "$(TARGET)" del /q "$(TARGET)"
+  CLEAN_TARGET_EXE = if exist "$(TARGET).exe" del /q "$(TARGET).exe"
+else
+  MKDIR_P = mkdir -p $(dir $@)
+  CLEAN_BUILD = rm -rf $(BUILD_DIR)
+  CLEAN_TARGET = rm -f $(TARGET)
+  CLEAN_TARGET_EXE =
+endif
 
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDLIBS)
 
-%.o: %.c
+$(BUILD_DIR)/%.o: %.c
+	$(MKDIR_P)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ) $(TARGET)
+	$(CLEAN_BUILD)
+	$(CLEAN_TARGET)
+	$(CLEAN_TARGET_EXE)
 
-.PHONY: all clean
+# --- web / WASM build --------------------------------------------------------
+# Requires Emscripten in PATH and a raylib PLATFORM_WEB static build.
+# Usage:  make web RAYLIB_WEB=/path/to/raylib-web
+#
+# The CI workflow builds raylib for web and passes its output directory here.
+RAYLIB_WEB ?= raylib-web
+WEB_DIR    := web
+
+WEB_FLAGS := -Wall -Wextra -Os -std=c11 -Isrc -Isrc/objects \
+             -DPLATFORM_WEB \
+             -I$(RAYLIB_WEB)/include \
+             -s USE_GLFW=3 \
+             -s TOTAL_MEMORY=67108864 \
+             -s ALLOW_MEMORY_GROWTH=1 \
+             --preload-file assets \
+             --shell-file $(WEB_DIR)/shell.html
+
+web: $(WEB_DIR)/index.html
+
+$(WEB_DIR)/index.html: $(SRC) $(WEB_DIR)/shell.html
+	emcc $(SRC) $(RAYLIB_WEB)/lib/libraylib.a $(WEB_FLAGS) -o $@
+
+.PHONY: all clean web
